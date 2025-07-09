@@ -3,6 +3,38 @@ import tkinter as tk
 import logger
 import Sorter
 
+selected_categories = {}
+
+
+def open_checkboxes_window():
+    top = ctk.CTkToplevel()
+    top.title("Wybierz kategorie do posortowania")
+    top.geometry("300x400")
+    top.grab_set()
+    top.focus_set()
+    top.transient(root)
+
+
+    from Sorter import categories
+
+    def confirm_and_close():
+        selected_cats = [cat for cat, var in selected_categories.items() if var.get()]
+        Sorter.sort_dest(selected_cats)
+        logger.save_log(f"Wybrane kategorie do sortowania: {', '.join(selected_cats)}", tag="info")
+        top.destroy()
+
+
+
+    for category in categories:
+        var = tk.IntVar(value=1)
+        checkbox = ctk.CTkCheckBox(top, text=category, variable=var)
+        checkbox.pack(anchor="w", padx=20,pady=5)
+        selected_categories[category] = var
+
+
+    confirm_btn = ctk.CTkButton(top,text="Zatwierdź",command=confirm_and_close)
+    confirm_btn.pack(pady=10)
+
 # Ustawienia stylu
 ctk.set_appearance_mode("dark")  # albo "dark"
 ctk.set_default_color_theme("green")
@@ -25,7 +57,7 @@ middle = ctk.CTkFrame(root)
 middle.grid(row=1, column=0, sticky="nsew")
 
 middle.grid_rowconfigure(0, weight=1)   # górny panel
-middle.grid_rowconfigure(1, weight=2)   #środkowy
+middle.grid_rowconfigure(1, weight=1)   #środkowy
 middle.grid_rowconfigure(2, weight=1)   # dolny panel (więcej miejsca na logi)
 middle.grid_columnconfigure(0, weight=1)
 
@@ -42,8 +74,8 @@ button_frame.grid(row=0, column=0, sticky="nsew")
 button_frame.grid_rowconfigure(0, weight=1)
 button_frame.grid_columnconfigure(0, weight=1)
 
-button = ctk.CTkButton(button_frame, text="Sortuj!",command=Sorter.sort_dest, font=("Segoe UI", 16))
-button.grid(row=0, column=0)
+button = ctk.CTkButton(button_frame, text="Sortuj!",command=open_checkboxes_window, font=("Segoe UI", 16))
+button.grid(row=0, column=0,sticky="ew",padx=100,pady=20)
 
 middle_mid = ctk.CTkFrame(middle)
 middle_mid.grid(row=1, column=0, sticky="nsew")
@@ -65,12 +97,14 @@ btn_clear = ctk.CTkButton(
     text_color="black",
     hover_color="#dcdcdc",
     command=logger.clearLog,
+    width=100
 
 )
-btn_success = ctk.CTkButton(btns_frame, text="Pokaż udane", command=logger.showSucess, font=("Segoe UI", 16))
+btn_success = ctk.CTkButton(btns_frame, text="Pokaż posortowane", command=logger.showSucess, font=("Segoe UI", 16),width=50)
+
 btn_fail = ctk.CTkButton(
     btns_frame,
-    text="Błąd",
+    text="Pokaż nieposortowane",
     font=("Segoe UI", 16),
     fg_color="#d32f2f",      # mocny czerwony (zgodny z ciemnym trybem)
     hover_color="#9a1f1f",   # ciemniejszy czerwony na hover
@@ -78,15 +112,15 @@ btn_fail = ctk.CTkButton(
     command=logger.showError,
 )
 
-btn_clear.grid(row=0, column=0)
-btn_success.grid(row=0, column=1)
-btn_fail.grid(row=0, column=2)
+btn_clear.grid(row=0, column=0,sticky="ew", padx=20)
+btn_success.grid(row=0, column=1,sticky="ew",padx=20)
+btn_fail.grid(row=0, column=2,sticky="ew",padx=20)
 
 
 # ---------------------------------------------------
 # Dolny panel na logi
 middle_bottom = ctk.CTkFrame(middle)
-middle_bottom.grid(row=2, column=0, sticky="nsew",padx=10,pady=10)
+middle_bottom.grid(row=2, column=0, sticky="nsew")
 
 middle_bottom.grid_rowconfigure(0, weight=1)
 middle_bottom.grid_columnconfigure(0, weight=1)
@@ -131,4 +165,7 @@ root.grid_rowconfigure(1, weight=1)   # środek
 root.grid_rowconfigure(2, weight=0)   # stopka
 root.grid_columnconfigure(0, weight=1)
 
+
 root.mainloop()
+
+
